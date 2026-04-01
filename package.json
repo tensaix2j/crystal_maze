@@ -1,0 +1,18 @@
+{
+  "name": "crystal_maze",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist --dest run3d"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1",
+    "three": "^0.169.0"
+  }
+}
