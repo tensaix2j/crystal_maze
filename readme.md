@@ -4,7 +4,7 @@
 ![](https://github.com/tensaix2j/crystal_maze/blob/master/public/images/cover.jpg?raw=true)
 
 
-Play Demo [here](https://tensaix2j.github.io/crystal_maze)
+Play Demo [here](https://tensaix2j.github.io/crystal_maze/)
 
 Dive into a brain-teasing, retro-inspired puzzle adventure. Navigate a vibrant, grid-based world as Quinn, a resourceful explorer tasked with collecting crystals scattered across intricate mazes.
 

@@ -554,7 +554,6 @@ export class MyGame extends Scene {
             case 'w':
             case 'W':
             case 'ArrowUp':
-            case ' ':
                 this.keystates[38] = 1;
                 this.keystates[40] = null;
                 
@@ -2837,7 +2836,7 @@ export class MyGame extends Scene {
 
     //----
     render_chip_remaining() {
-        this.txtChipRemaining.setText("Chip Remaining : " + this.chip_remaining );
+        this.txtChipRemaining.setText("Crystal Remaining : " + this.chip_remaining );
     }
 
     //-----
