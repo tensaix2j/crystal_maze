@@ -86,7 +86,7 @@ export class MyGame extends Scene {
     chip_remaining = 0;
     
     
-    setting_initial_speed = 0.05;
+    setting_initial_speed = 0.06;
     setting_camera_range = 12;
     setting_force_floor_sliding_speed   = 0.15;
     setting_ice_sliding_speed           = 0.15;
@@ -2836,7 +2836,7 @@ export class MyGame extends Scene {
 
     //----
     render_chip_remaining() {
-        this.txtChipRemaining.setText("Crystal Remaining : " + this.chip_remaining );
+        this.txtChipRemaining.setText("Crystals Remaining : " + this.chip_remaining );
     }
 
     //-----
@@ -3146,7 +3146,7 @@ export class MyGame extends Scene {
                         e_tilecoord = tilecoord - monster.direction;
                         monster.direction = -monster.direction;
                     }
-                    monster.speed = 0.045;
+                    monster.speed = this.setting_initial_speed * 0.9;
                     
                     
                 // 104 blue spider 
@@ -3175,7 +3175,7 @@ export class MyGame extends Scene {
                         e_tilecoord = tilecoord - monster.direction;
                         monster.direction = -monster.direction;
                     }
-                    monster.speed = 0.045;
+                    monster.speed = this.setting_initial_speed * 0.9;
                 
                 
 
@@ -3188,7 +3188,7 @@ export class MyGame extends Scene {
                         // Up
                         e_tilecoord = tilecoord + monster.direction;
                     }
-                    monster.speed = 0.05;
+                    monster.speed = this.setting_initial_speed * 1.0;
                 
                 //----------------------------
                 // 100 glider
@@ -3216,7 +3216,7 @@ export class MyGame extends Scene {
                         e_tilecoord = tilecoord - monster.direction;
                         monster.direction = -monster.direction;
                     }
-                    monster.speed = 0.05;
+                    monster.speed = this.setting_initial_speed * 1.0;
 
                 //-----------
                 // 101 Fireball 
@@ -3246,7 +3246,7 @@ export class MyGame extends Scene {
                     }
 
                     // speed
-                    monster.speed = 0.055;
+                    monster.speed = this.setting_initial_speed * 1.10;
 
                 //--------------
                 // 102 Pink ball
@@ -3263,7 +3263,7 @@ export class MyGame extends Scene {
                         e_tilecoord = tilecoord - monster.direction;
                         monster.direction = -monster.direction;
                     }
-                    monster.speed = 0.035;
+                    monster.speed = this.setting_initial_speed * 0.7;
                 
                 
                 //-----------
@@ -3300,7 +3300,7 @@ export class MyGame extends Scene {
                             break; 
                         }
                     }
-                    monster.speed = 0.030;
+                    monster.speed = this.setting_initial_speed * 0.6;
 
                 }
 
@@ -3468,7 +3468,7 @@ export class MyGame extends Scene {
         // player
         if ( this.player.lerp_progress != null ) {
             
-            this.player.lerp_progress += this.player.speed;
+            this.player.lerp_progress += this.player.speed * elapsed * 0.1;
             if ( this.player.lerp_progress > 1.0 ) {
                 this.player.lerp_progress = 1.0;
             }
@@ -3560,8 +3560,8 @@ export class MyGame extends Scene {
         this.threejs_camera.target_x = this.player.position.x + this.setting_camera_xoff;
         this.threejs_camera.target_z = this.player.position.z + this.setting_camera_range;
         
-        this.threejs_camera.position.x += ( this.threejs_camera.target_x - this.threejs_camera.position.x ) * 0.075;
-        this.threejs_camera.position.z += ( this.threejs_camera.target_z - this.threejs_camera.position.z ) * 0.075;
+        this.threejs_camera.position.x += ( this.threejs_camera.target_x - this.threejs_camera.position.x ) * 0.075 * elapsed * 0.1;
+        this.threejs_camera.position.z += ( this.threejs_camera.target_z - this.threejs_camera.position.z ) * 0.075 * elapsed * 0.1;
         
         // Light
         this.light.position.z = this.player.position.z - 10;
@@ -3610,7 +3610,8 @@ export class MyGame extends Scene {
 
             if ( tile.lerp_progress != null ) {
                 
-                tile.lerp_progress += tile.speed;
+                tile.lerp_progress += tile.speed * elapsed * 0.1;
+
                 if ( tile.lerp_progress > 1.0 ) {
                     tile.lerp_progress = 1.0;
                 }
@@ -3662,7 +3663,7 @@ export class MyGame extends Scene {
 
                     if ( monster.is_trapped != 1 && is_on_clone_machine != 1 ) {
 
-                        monster.lerp_progress += monster.speed;
+                        monster.lerp_progress += monster.speed * elapsed * 0.1;
                         if ( monster.lerp_progress > 1.0 ) {
                             monster.lerp_progress = 1.0;
                         }
