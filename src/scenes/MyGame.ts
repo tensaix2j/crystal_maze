@@ -286,7 +286,6 @@ export class MyGame extends Scene {
             return ;
         }
         
-        this.game_state = 0;    
         this.bgMask.setVisible(0);
         this.txtNotification.setText("");
 
@@ -344,10 +343,16 @@ export class MyGame extends Scene {
         this.player.lerp_progress   = null;
         this.player.passed_tile_action_done = null;
         this.player.istrapped = null;
+        this.player.registered_position.x = this.player.start_x;
+        this.player.registered_position.z = this.player.start_z;
+        
         this.txtHintContainer.setVisible(0);
 
         this.load_dynamic_objects();
         this.render_level_status();
+
+        this.game_state = 0;    
+        
     }
     
 
@@ -501,8 +506,10 @@ export class MyGame extends Scene {
 
                         _this.models[ modelname ] = gltf;
                         gltf.scene.traverse((node) => {
-                            if (node.isMesh) {
+
+                            if ( node.isMesh && modelname == "building" ) {
                                 node.castShadow = true; 
+                                node.receiveShadow = true;
                             }
                         });
                         _this.on_model_loaded( modelname );
@@ -1344,6 +1351,8 @@ export class MyGame extends Scene {
                             this.threejs_camera.position.z = this.player.position.z + this.setting_camera_range;
                             this.player.registered_position.x = x_tile;
                             this.player.registered_position.z = z_tile;  
+                            this.player.start_x = x_tile;
+                            this.player.start_z = z_tile;
                             this.player_align_avatar_to_player_pos_tilecoord();
 
 
@@ -1856,7 +1865,8 @@ export class MyGame extends Scene {
     // CMCT
     check_monster_current_tile(  tilecoord:number, prev_tilecoord:number ) {
         
-
+        //console.log( "CMCT", tilecoord );
+                    
         if ( this.monsters[ tilecoord ] ) {
 
             let tile_data_item  = this.current_level_obj[ this.current_level_obj_index["item"] ].data[ tilecoord ];
@@ -1864,11 +1874,15 @@ export class MyGame extends Scene {
             
             // 52 trap
             if ( tile_data_item == 52 ) {
+
+                //console.log( "CMCT","TR", tilecoord );
                 if ( this.is_trap_active( tilecoord ) == true ) {
                     this.monsters[ tilecoord ].istrapped = 1;
                 }
             }
 
+
+            
             // 99 bomb
             if ( this.removables[ tilecoord ] && this.removables[ tilecoord ].item_id == 99 ) {
                 
@@ -1913,7 +1927,8 @@ export class MyGame extends Scene {
                 monster.tilecoord = tilecoord; 
                 monster.new_tilecoord = new_tilecoord;
                 monster.speed = this.setting_ice_sliding_speed;  
-                
+                monster.passed_tile_action_done = null;
+                    
                 delete this.monsters[ tilecoord ];
                 this.monsters[ new_tilecoord ] = monster;
                 
@@ -1940,7 +1955,8 @@ export class MyGame extends Scene {
                     monster.tilecoord = tilecoord; 
                     monster.new_tilecoord = new_tilecoord;
                     monster.speed = this.setting_ice_sliding_speed; 
-                    
+                    monster.passed_tile_action_done = null;
+
                     
                     delete this.monsters[ tilecoord ];
                     this.monsters[ new_tilecoord ] = monster;
@@ -1952,6 +1968,22 @@ export class MyGame extends Scene {
             // 48,49,80,81 Tile buttons
             if ( [48,49,80,81,82].indexOf( tile_data_item) > -1 ) {
                 this.tile_button_on_pressed( tilecoord , tile_data_item );
+            }
+
+            // monster to teleport
+            if ( tile_data_item == 84 ) {
+                if ( this.src_and_target[ tilecoord ] ) {
+                    
+                    this.snds["teleport"].play();
+                    let monster = this.monsters[tilecoord];
+                    let new_tilecoord = this.src_and_target[ tilecoord ]
+                    
+                    // teleport monster
+                    delete this.monsters[tilecoord] ;
+                    this.monsters[new_tilecoord] = monster
+                    this.monster_next_move( new_tilecoord );
+
+                }
             }
             
         }
@@ -2968,6 +3000,7 @@ export class MyGame extends Scene {
                 tile.rotation.y = this.get_y_rot_by_direction(direction);
                 tile.direction = direction;
                 tile.item_id = type;
+                tile.monster_id = tilecoord;
                 this.monsters[ tilecoord ] = tile;
                 this.check_monster_current_tile(  tilecoord , tilecoord - direction );
                 this.monster_next_move( tilecoord ); 
@@ -3086,6 +3119,8 @@ export class MyGame extends Scene {
     //-------------------
     //bookmark5
     monster_next_move( tilecoord:number ) {
+
+        //console.log( "monster_next_move", tilecoord );
 
         if ( this.monsters[ tilecoord ] ) {
 
@@ -3315,16 +3350,19 @@ export class MyGame extends Scene {
                 monster.lerp_progress = 0;
                 monster.lerp_start_pos = new THREE.Vector3( sx, sy, sz );
                 monster.lerp_end_pos   = new THREE.Vector3( ex, ey, ez );
+                monster.passed_tile_action_done = null;
 
+                
                 monster.tilecoord = tilecoord;   
                 monster.new_tilecoord = e_tilecoord
+
+                //console.log("mnm", tilecoord, monster.new_tilecoord );
+
                 // Take the new tilecoord 
                 if ( e_tilecoord != tilecoord ) {
                     
                     delete this.monsters[tilecoord];
                     this.monsters[e_tilecoord] = monster
-                    monster.passed_tile_action_done = null;
-
                 }
             }   
         }
@@ -3661,7 +3699,7 @@ export class MyGame extends Scene {
 
                 if ( [ 97, 98, 100, 101, 102, 103, 104 ].indexOf( monster.item_id ) > -1 ) {
 
-                    if ( monster.is_trapped != 1 && is_on_clone_machine != 1 ) {
+                    if ( monster.istrapped != 1 && is_on_clone_machine != 1 ) {
 
                         monster.lerp_progress += monster.speed * elapsed * 0.1;
                         if ( monster.lerp_progress > 1.0 ) {
