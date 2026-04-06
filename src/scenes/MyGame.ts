@@ -97,8 +97,7 @@ export class MyGame extends Scene {
     level_index = 0;
     levels = [
 
-        //"debug01.json",
-
+        
         "cc1_01.json",
         "cc1_02.json",
         "cc1_03.json",
@@ -142,6 +141,9 @@ export class MyGame extends Scene {
         "cclp5_107.json",
         "cclp5_109.json",
         "cclp5_110.json",
+        
+        //"debug01.json",
+        
         "cclp5_114.json",
         
 
@@ -1863,9 +1865,9 @@ export class MyGame extends Scene {
 
     //--------
     // CMCT
-    check_monster_current_tile(  tilecoord:number, prev_tilecoord:number ) {
+    check_monster_current_tile(  tilecoord:number, prev_tilecoord:number , from_where ) {
         
-        //console.log( "CMCT", tilecoord );
+        //console.log( "CMCT", tilecoord, from_where );
                     
         if ( this.monsters[ tilecoord ] ) {
 
@@ -1967,6 +1969,8 @@ export class MyGame extends Scene {
 
             // 48,49,80,81 Tile buttons
             if ( [48,49,80,81,82].indexOf( tile_data_item) > -1 ) {
+
+                //console.log("BBB", "monster_press_button", tilecoord );
                 this.tile_button_on_pressed( tilecoord , tile_data_item );
             }
 
@@ -3002,9 +3006,9 @@ export class MyGame extends Scene {
                 tile.item_id = type;
                 tile.monster_id = tilecoord;
                 this.monsters[ tilecoord ] = tile;
-                this.check_monster_current_tile(  tilecoord , tilecoord - direction );
+                this.check_monster_current_tile(  tilecoord , tilecoord - direction , "monster creation" );
                 this.monster_next_move( tilecoord ); 
-            
+                
             }
         }
         
@@ -3050,6 +3054,9 @@ export class MyGame extends Scene {
 
                 // activate clone 
                 if ( target_tile_data_item == 8 && this.monsters[ target_tilecoord ] ) {
+                    
+                    //console.log("BBB", "tile_button_on_pressed", tilecoord );
+
                     this.clone_monster( 
                         target_tilecoord, 
                         this.monsters[ target_tilecoord ].item_id, 
@@ -3350,8 +3357,7 @@ export class MyGame extends Scene {
                 monster.lerp_progress = 0;
                 monster.lerp_start_pos = new THREE.Vector3( sx, sy, sz );
                 monster.lerp_end_pos   = new THREE.Vector3( ex, ey, ez );
-                monster.passed_tile_action_done = null;
-
+                
                 
                 monster.tilecoord = tilecoord;   
                 monster.new_tilecoord = e_tilecoord
@@ -3360,9 +3366,12 @@ export class MyGame extends Scene {
 
                 // Take the new tilecoord 
                 if ( e_tilecoord != tilecoord ) {
-                    
+
+                    monster.passed_tile_action_done = null;
                     delete this.monsters[tilecoord];
                     this.monsters[e_tilecoord] = monster
+                } else {
+                    monster.passed_tile_action_done = 1;
                 }
             }   
         }
@@ -3731,7 +3740,7 @@ export class MyGame extends Scene {
                             
                             if ( monster.passed_tile_action_done == null ) {
                                 monster.passed_tile_action_done = 1;
-                                this.check_monster_current_tile(  monster.new_tilecoord , monster.tilecoord );
+                                this.check_monster_current_tile(  monster.new_tilecoord , monster.tilecoord , "lerp_done");
                             }
                             this.monster_next_move( monster.new_tilecoord );
                             
