@@ -7,7 +7,7 @@ import {Start} from './scenes/Start';
 
 
 let gameInstance;
-let version     = "v1.0.7";
+let version     = "v1.0.8";
 let game_name   = "Crystal Maze"
 let game_id     = 140001
 

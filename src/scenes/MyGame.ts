@@ -142,8 +142,8 @@ export class MyGame extends Scene {
         "cclp5_109.json",
         "cclp5_110.json",
         
-        //"debug01.json",
-        
+        //"debug10.json",
+
         "cclp5_114.json",
         
 
@@ -781,12 +781,17 @@ export class MyGame extends Scene {
         // player
         this.player =  this.models["robot"].scene;
         this.player.castShadow = true;
+        this.castShadow( this.player );
+
+        
+
         this.player.collider = new THREE.Box3();
         this.player.scale.set( 0.25, 0.25, 0.25 );
         this.player.registered_position = new THREE.Vector3(0,0,0);
         this.player.mixer = new THREE.AnimationMixer( this.player );
         this.player.mixer.clipAction( this.models["robot"].animations[2]).play() ; 
         
+
         this.threejs_scene.add( this.player );
 
         
@@ -816,7 +821,14 @@ export class MyGame extends Scene {
     }
 
 
-
+    //----------------
+    castShadow( model ) {
+        model.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+            }
+        });
+    }
 
     //---------------------------------
     create_phaser_ui() {
@@ -1530,9 +1542,8 @@ export class MyGame extends Scene {
         
         } else if ( type == 99 ) {
             tile = this.cloneInstance( this.models["bomb"].scene );
-            tile.children[0].castShadow = true;
-        
-        
+            this.castShadow( tile );
+            
         } else if ( type == 52 ) {
             tile = this.cloneInstance( this.models["trap"].scene );
             tile.children[0].castShadow = true;
@@ -1552,8 +1563,8 @@ export class MyGame extends Scene {
         } else if ( type == 100 ) {
 
             tile = this.cloneInstance( this.models["glider"].scene );
-            tile.children[0].castShadow = true;
-        
+            this.castShadow( tile );
+            
         } else if ( type == 101 ) {
 
             tile = this.cloneInstance( this.models["fireball"].scene );
@@ -1561,13 +1572,12 @@ export class MyGame extends Scene {
         } else if ( type == 102 ) {
 
             tile = this.cloneInstance( this.models["pinkball"].scene );
-            tile.children[0].castShadow = true;
-        
+            this.castShadow( tile );
+
         } else if ( type == 103 ) {
 
             tile = this.cloneInstance( this.models["pacman"].scene );
-            tile.children[0].castShadow = true;
-            
+            this.castShadow( tile );
         
         } else if ( type == 11 ) {
             tile = this.cloneInstance( this.models["dirt"].scene );
@@ -1576,7 +1586,8 @@ export class MyGame extends Scene {
         } else if ( type == 43 ) {
 
             tile = this.cloneInstance( this.models["ice"].scene );
-        
+            tile.children[0].receiveShadow = true;
+            
         } else if ( [48,49,80,81,82].indexOf( type ) > -1 ) {
             
             let modelname = ["bluebutton","greenbutton","redbutton","yellowbutton","greybutton"][ [48,49,80,81,82].indexOf( type )  ]; 
@@ -1642,12 +1653,14 @@ export class MyGame extends Scene {
         } else if ( type == 97 ) {
 
             tile = this.cloneInstance( this.models["redspider"].scene );
-            tile.children[0].castShadow = true;        
+            this.castShadow( tile );
+            
           
         } else if ( type == 104 ) {
 
             tile = this.cloneInstance( this.models["bluespider"].scene );
-            tile.children[0].castShadow = true;        
+            this.castShadow( tile );
+                   
 
         } else if ( type == 98 ) {
             
@@ -2936,6 +2949,19 @@ export class MyGame extends Scene {
 
     }
 
+    //----
+    clone_movables_block( tilecoord:number, direction:number ) {
+
+        if ( this.check_is_tile_passable_for_movable_block( tilecoord + direction, direction ) == true  ) {
+            //console.log( "Cloned" + " " + tilecoord );
+            this.create_movable_block( tilecoord + direction );
+            this.check_movable_block_current_tile( tilecoord + direction, tilecoord )
+
+        } else {
+            //console.log("space occupied");
+        }
+    }
+
     //------
     clone_monster( tilecoord:number , type:number, direction:number ) {
 
@@ -2968,6 +2994,27 @@ export class MyGame extends Scene {
             this.creatables[ tilecoord ] = tile ;
         }
 
+    }
+
+    //------------
+    create_movable_block( tilecoord  ) {
+	
+        if ( this.movables[ tilecoord ] == null ) {
+
+            let x_tile  = tilecoord % 32;
+            let z_tile  = ( tilecoord / 32 ) >> 0;
+                
+            let tile = this.create_textured_block( 
+                x_tile,
+                0, 
+                z_tile,
+                7,
+                1,
+                1
+            );
+            tile.item_id = 7;
+            this.movables[ tilecoord ] = tile;        
+        }
     }
 
     //---------
@@ -3055,13 +3102,21 @@ export class MyGame extends Scene {
                 // activate clone 
                 if ( target_tile_data_item == 8 && this.monsters[ target_tilecoord ] ) {
                     
-                    //console.log("BBB", "tile_button_on_pressed", tilecoord );
+                    //console.log("clone_monster", "tile_button_on_pressed", tilecoord );
 
                     this.clone_monster( 
                         target_tilecoord, 
                         this.monsters[ target_tilecoord ].item_id, 
                         this.monsters[ target_tilecoord ].direction  
                     );
+
+                } else if ( target_tile_data_item == 8 && this.movables[ target_tilecoord ] ) {
+
+					//console.log('clone_movables_block', target_tilecoord );
+                    this.clone_movables_block( 
+	                    target_tilecoord, 
+	                    this.directions[ target_tilecoord ] 
+	                );
                 }
             }
         }
@@ -3611,8 +3666,10 @@ export class MyGame extends Scene {
         this.threejs_camera.position.z += ( this.threejs_camera.target_z - this.threejs_camera.position.z ) * 0.075 * elapsed * 0.1;
         
         // Light
-        this.light.position.z = this.player.position.z - 10;
-        this.light.target.position.set( 0, this.player.position.y, this.player.position.z );
+        this.light.position.x = this.player.position.x - 2;
+        this.light.position.z = this.player.position.z - 5;
+        
+        this.light.target.position.set( this.player.position.x , 0, this.player.position.z );
         this.light.target.updateMatrixWorld();
 
     }
