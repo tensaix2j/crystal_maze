@@ -44,7 +44,7 @@ export class MyGame extends Scene {
         "gravel",
         "hiddenwall",
         "thin_wall",
-        "thin_wall_corner"
+        "thin_wall_corner",
     ]
 
     models_loaded = 0;
@@ -201,8 +201,7 @@ export class MyGame extends Scene {
             this.load.audio('teleport', 'sounds/teleport.mp3');
             this.load.audio('victory', 'sounds/victory.mp3');
             this.load.audio('water', 'sounds/water.mp3');
-            this.load.audio('bgm'  , 'sounds/pixieland.mp3');
-        
+            
             
             
         }
@@ -420,7 +419,8 @@ export class MyGame extends Scene {
     //----------
     create() {
 
-        this.loadingText = this.add.text( this.sys.game.config.width/2,
+            
+        this.loadingText = this.add.text( this.sys.game.scale.width/2,
             100, 'Loading...', {
                 fontFamily: '"Comic Sans MS"',
                 fontSize: '40px',
@@ -430,7 +430,7 @@ export class MyGame extends Scene {
             }).setOrigin(0.5,0.5).setDepth(101);
 
         this.score = 0;
-        this.scoreText = this.add.text( this.sys.game.config.width/2, 100 , '0 ', {
+        this.scoreText = this.add.text( this.sys.game.scale.width/2, 100 , '0 ', {
             fontFamily: '"Comic Sans MS"',
                 fontSize: '80px',
                 color: '#ffffff',
@@ -440,23 +440,24 @@ export class MyGame extends Scene {
 
 
         let x = 10;
-        let y = this.sys.game.config.height - 20;
+        let y = this.sys.game.scale.height - 14;
         let wasd = this.add.image(x, y, 'wasd').setOrigin(0, 1).setAlpha(0.4);
-        wasd.setScale(0.4, 0.4 );
+        wasd.setScale(0.25, 0.25 ).setVisible(0);
+        this.wasd = wasd;
 
         const version = this.sys.game.config.gameVersion; 
-        x = this.sys.game.config.width - 10;
-        y = this.sys.game.config.height - 14;
+        x = this.sys.game.scale.width - 10;
+        y = this.sys.game.scale.height - 14;
         const versiontxt = this.add.text( x, y , version, {
             font: '10px Inter',
             fill: '#fff',
-        }).setOrigin(1, 1); 
-
+        }).setOrigin(1, 1).setVisible(0); 
+        this.versiontxt = versiontxt;
 
         
         this.text_effect.sprite = this.add.text( 
-            this.sys.game.config.width  * 0.5  , 
-            this.sys.game.config.height * 0.5 , 
+            this.sys.game.scale.width  * 0.5  , 
+            this.sys.game.scale.height * 0.5 , 
             " ",
             {
                 font: '150px creepycrawlersrotal',
@@ -467,6 +468,100 @@ export class MyGame extends Scene {
         ).setOrigin(0.5, 0.5).setDepth(1);
         
         
+        this.txtContainerStatus = this.add.container(this.sys.game.scale.width - 20, 0);
+        
+        // Level
+        this.txtLevel = this.add.text( 
+            0,
+            30,
+            'Level: 1', 
+            {
+                fontFamily: '"Comic Sans MS"',
+                fontSize: '18px',
+                color: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 1
+            }).setOrigin(1,0).setDepth(101);
+
+        
+        
+
+        // Chip remaining
+        this.txtChipRemaining = this.add.text( 
+            0,
+            60,
+            'Crystal Remaining: 0', 
+            {
+                fontFamily: '"Comic Sans MS"',
+                fontSize: '18px',
+                color: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 1
+            }).setOrigin(1,0).setDepth(101);
+
+
+        this.txtContainerStatus.add( this.txtLevel );
+        this.txtContainerStatus.add( this.txtChipRemaining );
+        this.txtContainerStatus.setVisible(0);
+
+
+        // Txt hint
+        this.txtHintContainer = this.add.container(
+            this.sys.game.scale.width / 2 ,
+            this.sys.game.scale.height/ 2
+        );
+
+        let graphics = this.add.graphics();
+        graphics.lineStyle(2, 0xffffff, 1);     // white border (2px)
+        graphics.fillStyle(0x110503, 0.85);      // black fill, 50% opacity
+        let w = 800;
+        let h = 150;
+        graphics.fillRoundedRect(  -w/2, -h/2,   w, h, 20 );
+        graphics.strokeRoundedRect(-w/2, -h/2,   w, h, 20 );
+        this.txtHintContainer.add( graphics );
+        this.txtHint = this.add.text( 
+            0 ,
+            0 ,
+            "Hello World",
+            {
+                fontFamily: '"Comic Sans MS"',
+                fontSize: '18px',
+                color: '#ffffff'
+            }
+        ).setOrigin(0.5, 0.5 )
+        this.txtHintContainer.add( this.txtHint );
+        this.txtHintContainer.setVisible(0);
+
+
+        // Txt Notification
+        this.txtNotification = this.add.text( 
+            this.sys.game.scale.width / 2 ,
+            this.sys.game.scale.height * 0.3,
+            "",
+            {
+                fontFamily: '"Comic Sans MS"',
+                fontSize: '18px',
+                color: '#ffffff'
+            }
+        ).setOrigin(0.5, 0.5 ).setDepth(1200);
+
+        // bgMask
+        this.bgMask = this.add.graphics();
+        this.bgMask.fillStyle(0xff0000, 0.5);   
+        w = this.sys.game.scale.width;
+        h = this.sys.game.scale.height;
+        this.bgMask.fillRect(  0,0 , w, h);
+        this.bgMask.setVisible(0);
+
+
+        
+
+        //-----
+        this.scale.on('resize', (gameSize) => {
+            this.resize();
+        });
+        
+
         if ( this.created == null ) {
 
             this.snds = {};
@@ -487,9 +582,7 @@ export class MyGame extends Scene {
             this.snds["teleport"] = this.sound.add('teleport');
             this.snds["victory"] = this.sound.add('victory');
             this.snds["water"] = this.sound.add('water');
-            this.snds["bgm"] = this.sound.add('bgm', { loop: true });
-            this.snds["bgm"].play();
-
+            
             
 
             // load glb
@@ -536,6 +629,18 @@ export class MyGame extends Scene {
 
     }
 
+
+    //----
+    resize() {
+        console.log("resize");
+        let threejs_canvas = this.threejs_renderer.domElement;
+        threejs_canvas.style.width  = document.getElementById("game-container").style.width;
+        threejs_canvas.style.height = document.getElementById("game-container").style.height;
+        threejs_canvas.style.marginLeft = document.getElementById("game-container").style.marginLeft ;
+        threejs_canvas.style.marginTop = document.getElementById("game-container").style.marginTop;
+
+
+    }
 
     //-----------------
     onPointerDown( pointer ) {
@@ -595,10 +700,12 @@ export class MyGame extends Scene {
             case 'm':
             case 'M':
                 
-                if ( this.snds["bgm"].isPlaying) {
-                    this.snds["bgm"].pause();
+                let startts = this.scene.get('Start');
+
+                if ( startts.snds["bgm"].isPlaying) {
+                    startts.snds["bgm"].pause();
                 } else {
-                    this.snds["bgm"].play();
+                    startts.snds["bgm"].play();
                 }
 
                 
@@ -685,7 +792,7 @@ export class MyGame extends Scene {
         
         // Create Three.js scene
         this.threejs_renderer = new THREE.WebGLRenderer({alpha:true});
-        this.threejs_renderer.setSize( this.sys.game.config.width, this.sys.game.config.height);
+        this.threejs_renderer.setSize( this.sys.game.scale.width, this.sys.game.scale.height);
         this.threejs_renderer.setClearColor(0x222222, 1);
         
         this.threejs_renderer.shadowMap.enabled = true; 
@@ -700,6 +807,9 @@ export class MyGame extends Scene {
         threejs_canvas.style.position = "absolute";
         threejs_canvas.style.left = "0px";
         threejs_canvas.style.top = "0px";
+        threejs_canvas.style.marginLeft = document.getElementById("game-container").style.marginLeft ;
+        threejs_canvas.style.marginTop = document.getElementById("game-container").style.marginTop;
+        
         //threejs_canvas.style.zIndex = 10;
         //threejs_canvas.style.pointerEvents = 'none';
         
@@ -710,7 +820,7 @@ export class MyGame extends Scene {
         this.threejs_scene = new THREE.Scene();
         this.threejs_camera = new THREE.PerspectiveCamera(
             25, 
-            this.sys.game.config.width / this.sys.game.config.height, 
+            this.sys.game.scale.width / this.sys.game.scale.height, 
             0.1, 
             1000
         );
@@ -830,93 +940,7 @@ export class MyGame extends Scene {
         });
     }
 
-    //---------------------------------
-    create_phaser_ui() {
-
-        this.txtContainerStatus = this.add.container(this.sys.game.config.width - 20, 0);
-        
-        // Level
-        this.txtLevel = this.add.text( 
-            0,
-            30,
-            'Level: 1', 
-            {
-                fontFamily: '"Comic Sans MS"',
-                fontSize: '20px',
-                color: '#ffffff',
-                stroke: '#000000',
-                strokeThickness: 1
-            }).setOrigin(1,0).setDepth(101);
-
-        
-        
-
-        // Chip remaining
-        this.txtChipRemaining = this.add.text( 
-            0,
-            60,
-            'Crystal Remaining: 0', 
-            {
-                fontFamily: '"Comic Sans MS"',
-                fontSize: '20px',
-                color: '#ffffff',
-                stroke: '#000000',
-                strokeThickness: 1
-            }).setOrigin(1,0).setDepth(101);
-
-
-        this.txtContainerStatus.add( this.txtLevel );
-        this.txtContainerStatus.add( this.txtChipRemaining );
-        
-
-        // Txt hint
-        this.txtHintContainer = this.add.container(
-            this.sys.game.config.width / 2 ,
-            this.sys.game.config.height/ 2
-        );
-
-        let graphics = this.add.graphics();
-        graphics.lineStyle(2, 0xffffff, 1);     // white border (2px)
-        graphics.fillStyle(0x110503, 0.85);      // black fill, 50% opacity
-        let w = 800;
-        let h = 150;
-        graphics.fillRoundedRect(  -w/2, -h/2,   w, h, 20 );
-        graphics.strokeRoundedRect(-w/2, -h/2,   w, h, 20 );
-        this.txtHintContainer.add( graphics );
-        this.txtHint = this.add.text( 
-            0 ,
-            0 ,
-            "Hello World",
-            {
-                fontFamily: '"Comic Sans MS"',
-                fontSize: '18px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5, 0.5 )
-        this.txtHintContainer.add( this.txtHint );
-        this.txtHintContainer.setVisible(0);
-
-
-        // Txt Notification
-        this.txtNotification = this.add.text( 
-            this.sys.game.config.width / 2 ,
-            this.sys.game.config.height * 0.3,
-            "",
-            {
-                fontFamily: '"Comic Sans MS"',
-                fontSize: '18px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5, 0.5 ).setDepth(1200);
-
-        // bgMask
-        this.bgMask = this.add.graphics();
-        this.bgMask.fillStyle(0xff0000, 0.5);   
-        w = this.sys.game.config.width;
-        h = this.sys.game.config.height;
-        this.bgMask.fillRect(  0,0 , w, h);
-        this.bgMask.setVisible(0);
-    }
+    
 
     //-----
     text_adjust( txt:string , wrapwidth:number ) {
@@ -954,8 +978,7 @@ export class MyGame extends Scene {
             this.text_effect.ticking = false;
             
             this.clear_smokes();
-            this.create_phaser_ui();
-    
+            
             
             this.clear_inventories();
             this.clear_dynamic_objects();
@@ -1013,6 +1036,9 @@ export class MyGame extends Scene {
         this.render_level_status();
         this.txtNotification.setText( "");
         this.game_state = 0;
+        this.versiontxt.setVisible(1);
+        this.wasd.setVisible(1);
+        this.txtContainerStatus.setVisible(1);
         
     }
 
@@ -1685,8 +1711,8 @@ export class MyGame extends Scene {
     //----
     display_text_effect( caption, fontsize ) {
 
-        this.text_effect.sprite.y = this.sys.game.config.height * 0.5;
-        this.text_effect.sprite.x = this.sys.game.config.width * 0.5;
+        this.text_effect.sprite.y = this.sys.game.scale.height * 0.5;
+        this.text_effect.sprite.x = this.sys.game.scale.width * 0.5;
         this.text_effect.sprite.setText(caption + " " );
 
         this.text_effect.sprite.setAlpha( 1.0 );

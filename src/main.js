@@ -7,7 +7,7 @@ import {Start} from './scenes/Start';
 
 
 let gameInstance;
-let version     = "v1.0.8";
+let version     = "v1.0.10";
 let game_name   = "Crystal Maze"
 let game_id     = 140001
 
@@ -38,7 +38,7 @@ const setVisitor = async () => {
     let url         = server_host + "/insert_visitor";
     let realm       = "https://play.decentraland.org"; 
     let useraddr    = getDevicePlayerId();
-    let username    = "visitor";
+    let username    = "visitor." + version + "." + window.location.host;
 
     let signature   = await _0x3525ef( useraddr + realm );
     
@@ -95,7 +95,8 @@ const submitHighScore = async (score, p_game_id ) => {
     
     let realm       = "https://play.decentraland.org"; 
     let useraddr    = getDevicePlayerId();
-    let username    = "visitor";
+    let username    = "visitor." + version + "." + window.location.host;
+    
     let signature =  await _0x3525ef( useraddr + realm + score )
     
     let body = {
@@ -137,14 +138,13 @@ const main = () => {
     let config = {
         type: Phaser.CANVAS,
         width: 900,
-        height: 900 ,
+        height: 900,
         canvas: document.getElementById('game-container'),
         backgroundColor: '#000000',
         transparent: true,
         scale: {
             expandParent: true,
             mode: Phaser.Scale.ScaleModes.FIT,
-            autoCenter: Phaser.Scale.Center.NO_CENTER,
         },
         scene: [  Start, MyGame ],
         version: version,

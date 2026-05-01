@@ -21,7 +21,10 @@ export class Start extends Scene {
         
         this.load.image('cover'       , 'images/cover.jpg');
         this.load.image('lock'        , 'images/lock.png');
-
+        
+        this.load.audio('bgm'  , 'sounds/pixieland.mp3');
+        this.load.audio('buttonclick', 'sounds/buttonclick.mp3');
+            
         
     }
 
@@ -75,8 +78,8 @@ export class Start extends Scene {
 
         //-------
        // title
-       x = this.sys.game.config.width * 0.5;
-       y = this.sys.game.config.width * 0.1;
+       x = this.sys.game.scale.width * 0.5;
+       y = this.sys.game.scale.width * 0.1;
 
        let title = "Crystal Maze ";
        const title_text = this.add.text(x, y, title, {
@@ -90,17 +93,17 @@ export class Start extends Scene {
 
         //-------
         // cover
-        x = this.sys.game.config.width * 0.5;
-        y = this.sys.game.config.height * 0.5;
+        x = this.sys.game.scale.width * 0.5;
+        y = this.sys.game.scale.height * 0.5;
         const cover = this.add.image(x, y, 'cover').setOrigin(0.5, 0.5);
         
         
 
         //-------
         // buttons
-        x = this.sys.game.config.width * 0.5;
-        y = this.sys.game.config.height - 100;
-        w = this.sys.game.config.width * 0.8;
+        x = this.sys.game.scale.width * 0.5;
+        y = this.sys.game.scale.height - 100;
+        w = this.sys.game.scale.width * 0.8;
         h = 80;
         
         this.startbtn = this.create_button( x,y,w,h, "START" );
@@ -116,8 +119,8 @@ export class Start extends Scene {
 
 
         this.levelMenuContainer = this.add.container(
-            this.sys.game.config.width / 2 ,
-            this.sys.game.config.height/ 2
+            this.sys.game.scale.width / 2 ,
+            this.sys.game.scale.height/ 2
         ).setVisible(0);
 
         
@@ -193,17 +196,29 @@ export class Start extends Scene {
         }
 
         const version = this.sys.game.config.gameVersion; 
-        x = this.sys.game.config.width - 10;
-        y = this.sys.game.config.height - 14;
+        x = this.sys.game.scale.width - 10;
+        y = this.sys.game.scale.height - 14;
         const versiontxt = this.add.text( x, y , version, {
             font: '10px Inter',
             fill: '#fff',
         }).setOrigin(1, 1); 
 
+        if ( this.created == null ) {
+
+            // bgm
+            this.snds = {};
+            this.snds["buttonclick"] = this.sound.add('buttonclick');
+            this.snds["bgm"] = this.sound.add('bgm', { loop: true });
+            this.snds["bgm"].play();
+        }
+        this.created = 1;
+        
     }
 
     //------------
     onGameObjectDown(pointer, item ) {
+
+        this.snds["buttonclick"].play();
         if ( item.button_id == null ) {
             this.levelMenuContainer.setVisible(1);
             this.startbtn.setVisible(0);
